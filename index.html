@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI Image Generator — Transform text prompts into stunning AI-generated images." />
+  <title>AI Image Generator — ImageForge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Animated Grid Background ────────────────────────── -->
+  <div class="bg-grid"></div>
+  <div class="bg-orbs">
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+    <div class="orb orb--3"></div>
+    <div class="orb orb--4"></div>
+  </div>
+
+  <div class="app">
+
+    <!-- ── Top Bar ──────────────────────────────────────────── -->
+    <nav class="topbar">
+      <div class="topbar__brand">
+        <div class="topbar__logo">
+          <span class="topbar__logo-icon">⚡</span>
+        </div>
+        <span class="topbar__name">IMAGE<span class="topbar__name-accent">FORGE</span></span>
+      </div>
+      <div class="topbar__pills">
+        <span class="pill pill--live"><span class="pill__dot"></span>LIVE</span>
+        <span class="pill pill--model">SDXL 1.0</span>
+        <span class="pill pill--res">1024×1024</span>
+      </div>
+    </nav>
+
+    <!-- ── Hero ────────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header__meta">
+        <div class="header__accent-bar"></div>
+        <span class="mono-label">AI IMAGE SYNTHESIS</span>
+      </div>
+
+      <h1>
+        <span class="header__line1">Turn Words Into</span>
+        <span class="header__line2"><span class="accent-text">Visual Magic</span></span>
+      </h1>
+
+      <p class="lead">
+        Type any scene, any style, any world. Our AI engine renders your imagination into photorealistic and artistic masterpieces in seconds. Powered by Stable Diffusion XL.
+      </p>
+
+      <div class="header__counters">
+        <div class="counter">
+          <span class="counter__value" id="genCounter">0</span>
+          <span class="counter__label">Images Created</span>
+        </div>
+        <div class="counter__divider"></div>
+        <div class="counter">
+          <span class="counter__value" id="statusIndicator">⬤ Ready</span>
+          <span class="counter__label">System Status</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Main Section ────────────────────────────────────── -->
+    <main>
+
+      <!-- Prompt Group -->
+      <div class="prompt-group">
+        <div class="prompt-group__label-row">
+          <label for="promptInput" class="mono-label">// PROMPT_SEQUENCE</label>
+          <span class="mono-label" id="charCounter">0 / 500</span>
+        </div>
+
+        <div class="prompt-input-wrap">
+          <textarea
+            class="prompt-input"
+            id="promptInput"
+            maxlength="500"
+            placeholder="A cyberpunk samurai standing on a neon rooftop, rain, volumetric lighting, ultra detailed, 8k..."
+          ></textarea>
+          <div class="prompt-input-glow"></div>
+        </div>
+
+        <div class="prompt-actions">
+          <div class="suggestions">
+            <button class="btn btn-ghost" onclick="useChip(this)">🌌 Cosmic nebula</button>
+            <button class="btn btn-ghost" onclick="useChip(this)">🏙️ Neon cityscape</button>
+            <button class="btn btn-ghost" onclick="useChip(this)">🎨 Oil painting</button>
+            <button class="btn btn-ghost" onclick="useChip(this)">🐉 Fantasy dragon</button>
+            <button class="btn btn-ghost" onclick="useChip(this)">🤖 Mech warrior</button>
+          </div>
+
+          <div class="prompt-actions__btns">
+            <button class="btn btn-secondary" onclick="handleSurprise()" title="Random prompt">
+              🎲 Surprise Me
+            </button>
+            <button class="btn btn-primary" id="generateBtn" onclick="handleGenerate()">
+              <span class="btn-primary__glow"></span>
+              <span class="btn-primary__text">⚡ Generate Image</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Banner -->
+      <div class="error-banner" id="errorBanner">
+        <span class="error-banner__icon">⚠</span>
+        <span id="errorText"></span>
+        <button class="error-banner__close" onclick="hideError()">✕</button>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div class="loader" id="loader">
+        <div class="loader__card">
+          <div class="loader__rings">
+            <div class="loader__ring loader__ring--1"></div>
+            <div class="loader__ring loader__ring--2"></div>
+            <div class="loader__ring loader__ring--3"></div>
+          </div>
+          <div class="loader__info">
+            <div class="loader__text">Rendering<span class="accent-text">...</span></div>
+            <span class="mono-label">Diffusion Model Processing • ~20-30s</span>
+          </div>
+          <div class="loader__progress">
+            <div class="loader__progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Display -->
+      <section class="result section" id="result">
+        <div class="result__header">
+          <h2 class="result__title">✦ Output</h2>
+          <span class="mono-label accent-text text-shadow-layer">GENERATION COMPLETE</span>
+        </div>
+
+        <div class="result__frame">
+          <div class="result__image-wrapper">
+            <img class="result__image" id="resultImage" alt="Generated Output" />
+            <div class="result__image-shine"></div>
+          </div>
+          <div class="result__meta">
+            <div class="result__prompt-area">
+              <span class="mono-label">// RENDERED_PROMPT</span>
+              <div class="result__prompt" id="resultPrompt"></div>
+            </div>
+            <div class="result__btns">
+              <button class="btn btn-primary btn-primary--sm" onclick="downloadImage()">
+                ↓ Download
+              </button>
+              <button class="btn btn-secondary" onclick="handleGenerate()">
+                ↻ Regenerate
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gallery -->
+      <section class="gallery section" id="gallery">
+        <div class="gallery__header">
+          <h2 class="result__title">⬡ Archive</h2>
+          <span class="mono-label" id="galleryCount">0 RECORDS</span>
+        </div>
+        <div class="gallery__grid" id="galleryGrid"></div>
+      </section>
+
+    </main>
+
+    <!-- ── Footer ──────────────────────────────────────────── -->
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>Built with <span class="accent-text">♥</span> — Powered by <a href="https://huggingface.co" target="_blank" rel="noopener">Hugging Face</a></span>
+        <span class="footer__divider">·</span>
+        <span>Stable Diffusion XL 1.0</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
